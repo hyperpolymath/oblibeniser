@@ -1,0 +1,45 @@
+// SPDX-License-Identifier: PMPL-1.0-or-later
+// Copyright (c) 2026 Jonathan D.A. Jewell (hyperpolymath) <j.d.a.jewell@open.ac.uk>
+= Oblibeniser
+Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
+:toc: left
+:icons: font
+
+== What Is This?
+
+Oblibeniser makes operations **reversible and auditable** in hostile environments —
+every action can be undone, every decision is logged with formal accountability.
+
+Oblíbený (Czech: "beloved") is a Turing-incomplete language guaranteeing
+termination, reversibility, and accountability. Oblibeniser wraps existing
+operations in these guarantees.
+
+== How It Works
+
+Describe your operations in `oblibeniser.toml`. Oblibeniser:
+
+1. Generates reversible wrappers — every operation gets an inverse
+2. Adds accountability logging — who did what, when, with what authority
+3. Guarantees termination — Turing-incompleteness proves no infinite loops
+4. Provides post-quantum cryptographic audit trails
+
+== Key Value
+
+* **Every operation undoable** — database writes, file changes, API calls
+* **Complete accountability** — cryptographic proof of who authorised what
+* **Termination guaranteed** — no infinite loops, no runaway processes
+* **Hostile-environment safe** — designed for zero-trust deployment
+
+== Architecture
+
+Follows the hyperpolymath -iser pattern:
+manifest -> Idris2 ABI proof -> Zig FFI bridge -> target language codegen.
+Part of the https://github.com/hyperpolymath/iseriser[-iser family].
+
+== Status
+
+**Pre-alpha.** Architecture defined, scaffolding in place, codegen pending.
+
+== License
+
+SPDX-License-Identifier: PMPL-1.0-or-later

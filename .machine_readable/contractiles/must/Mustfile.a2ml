@@ -67,3 +67,7 @@ These are hard requirements — CI fails if any check fails.
 - description: No Admitted in Coq code
 - run: "! grep -r 'Admitted' --include='*.v' . 2>/dev/null | grep -v node_modules | head -1 | grep -q ."
 - severity: critical
+
+## Domain-Specific Constraints (oblibeniser)
+
+### reversibility-proof\n- description: All wrapped operations must have proven inverse functions\n- target: Idris2 proofs that apply(inverse(op)) == identity\n- severity: critical\n\n### audit-trail-completeness\n- description: Every operation must log sufficient state for replay\n- target: Full event sourcing with causal ordering\n- severity: critical\n\n### no-silent-failure\n- description: Wrapped operations must never silently drop errors\n- target: Result types mandatory, no unwrap/expect in generated code\n- severity: critical

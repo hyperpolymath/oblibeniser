@@ -11,28 +11,30 @@
   (project-context
     (name "oblibeniser")
     (description "Make operations reversible and auditable via Oblibeny")
-    (domain "reversible-computing")
-    (status "scaffold-documented")
+    (status "phase-1-complete")
     (priority "—")
-    (ecosystem "-iser family (https://github.com/hyperpolymath/iseriser)"))
+    (ecosystem "-iser family (https://github.com/hyperpolymath/iseriser)")
+    (domain "Reversible computation and audit trails"))
 
   (current-position
-    (phase "scaffold-with-bespoke-abi")
-    (completion-percentage 15)
-    (milestone "Bespoke Idris2 ABI types (ReversibleOperation, InverseProof, AuditEntry, StateSnapshot, UndoStack), Zig FFI with operation recording/inverse/audit/undo, integration tests, documentation"))
+    (phase "phase-1-complete")
+    (completion-percentage 45)
+    (milestone "Phase 1 complete — scaffold, CLI, manifest parser, codegen stubs, ABI types, RSR template"))
 
   (route-to-mvp
-    (step 1 "Wire Rust CLI codegen to emit Oblibeny reversible wrappers")
-    (step 2 "Implement domain-specific inverse computation (file, SQL, config)")
-    (step 3 "Cryptographic audit trail (hash-chain with post-quantum signing)")
-    (step 4 "Time-travel debugging (replay/reverse from snapshots)")
-    (step 5 "Integration tests with real-world use cases (DB migration, config rollback)")
-    (step 6 "PanLL panel and BoJ-server cartridge"))
+    (step 1 "Phase 1 — scaffold, CLI, manifest parser, ABI types [COMPLETE]")
+    (step 2 "Phase 2 — core domain logic implementation")
+    (step 3 "Phase 3 — Idris2 ABI formal proofs")
+    (step 4 "Phase 4 — Zig FFI bridge implementation")
+    (step 5 "Phase 5 — integration tests with real targets")
+    (step 6 "Phase 6 — documentation and examples")
+    (step 7 "Phase 7 — Chainguard container + CI hardening")
+    (step 8 "Phase 8 — first release (v0.1.0)"))
 
   (blockers-and-issues
-    (none "Project is in scaffold phase — no blockers yet"))
+    (none "No blockers — Phase 1 complete, ready for Phase 2"))
 
   (critical-next-actions
-    (action "Implement codegen for reversible wrappers (Phase 1)")
-    (action "Write first end-to-end example: file mutation with undo")
-    (action "Connect Rust manifest parser to Zig FFI via generated C headers")))
+    (action "Begin Phase 2 — implement core domain logic for oblibeniser")
+    (action "Write property-based tests for manifest parsing")
+    (action "Define Idris2 ABI proof obligations for Phase 3")))

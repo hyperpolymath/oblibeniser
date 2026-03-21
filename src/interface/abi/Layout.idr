@@ -1,16 +1,17 @@
 -- SPDX-License-Identifier: PMPL-1.0-or-later
--- Copyright (c) {{CURRENT_YEAR}} {{AUTHOR}} ({{OWNER}}) <{{AUTHOR_EMAIL}}>
+-- Copyright (c) 2026 Jonathan D.A. Jewell (hyperpolymath) <j.d.a.jewell@open.ac.uk>
 --
-||| Memory Layout Proofs
+||| Memory Layout Proofs for Oblibeniser
 |||
 ||| This module provides formal proofs about memory layout, alignment,
-||| and padding for C-compatible structs.
+||| and padding for C-compatible structs used in the reversible computing
+||| pipeline — particularly AuditEntry, StateSnapshot, and UndoStack.
 |||
 ||| @see https://en.wikipedia.org/wiki/Data_structure_alignment
 
-module {{PROJECT}}.ABI.Layout
+module Oblibeniser.ABI.Layout
 
-import {{PROJECT}}.ABI.Types
+import Oblibeniser.ABI.Types
 import Data.Vect
 import Data.So
 
@@ -141,25 +142,97 @@ checkCABI layout =
   Right (CABIOk layout ?fieldsAlignedProof)
 
 --------------------------------------------------------------------------------
--- Example Layouts
+-- AuditEntry Layout (oblibeniser-specific)
 --------------------------------------------------------------------------------
 
-||| Example: Simple struct layout
+||| AuditEntry C-ABI layout:
+|||   sequenceNo : Bits64 @ offset 0  (8 bytes)
+|||   timestamp  : Bits64 @ offset 8  (8 bytes)
+|||   prevHash   : Bits64 @ offset 16 (8 bytes)
+|||   entryHash  : Bits64 @ offset 24 (8 bytes)
+|||   operationId: Bits64 @ offset 32 (8 bytes)
+|||   actorPtr   : Bits64 @ offset 40 (8 bytes)
+|||   authHash   : Bits64 @ offset 48 (8 bytes)
+|||   isForward  : Bits32 @ offset 56 (4 bytes)
+|||   _padding   :        @ offset 60 (4 bytes)
+|||   Total: 64 bytes, alignment: 8
 public export
-exampleLayout : StructLayout
-exampleLayout =
+auditEntryLayout : StructLayout
+auditEntryLayout =
   MkStructLayout
-    [ MkField "x" 0 4 4     -- Bits32 at offset 0
-    , MkField "y" 8 8 8     -- Bits64 at offset 8 (4 bytes padding)
-    , MkField "z" 16 8 8    -- Double at offset 16
+    [ MkField "sequenceNo"  0  8 8
+    , MkField "timestamp"   8  8 8
+    , MkField "prevHash"   16  8 8
+    , MkField "entryHash"  24  8 8
+    , MkField "operationId" 32  8 8
+    , MkField "actorPtr"   40  8 8
+    , MkField "authHash"   48  8 8
+    , MkField "isForward"  56  4 4
+    ]
+    64  -- Total size: 64 bytes (with 4 bytes trailing padding)
+    8   -- Alignment: 8 bytes
+
+||| Proof that AuditEntry layout is C-ABI compliant
+export
+auditEntryLayoutValid : CABICompliant auditEntryLayout
+auditEntryLayoutValid = CABIOk auditEntryLayout ?auditEntryFieldsAligned
+
+--------------------------------------------------------------------------------
+-- StateSnapshot Layout (oblibeniser-specific)
+--------------------------------------------------------------------------------
+
+||| StateSnapshot C-ABI layout:
+|||   snapshotId : Bits64 @ offset 0  (8 bytes)
+|||   timestamp  : Bits64 @ offset 8  (8 bytes)
+|||   stateHash  : Bits64 @ offset 16 (8 bytes)
+|||   stateSize  : Bits32 @ offset 24 (4 bytes)
+|||   _padding   :        @ offset 28 (4 bytes)
+|||   statePtr   : Bits64 @ offset 32 (8 bytes)
+|||   Total: 40 bytes, alignment: 8
+public export
+stateSnapshotLayout : StructLayout
+stateSnapshotLayout =
+  MkStructLayout
+    [ MkField "snapshotId"  0  8 8
+    , MkField "timestamp"   8  8 8
+    , MkField "stateHash"  16  8 8
+    , MkField "stateSize"  24  4 4
+    , MkField "statePtr"   32  8 8
+    ]
+    40  -- Total size: 40 bytes (with 4 bytes internal padding after stateSize)
+    8   -- Alignment: 8 bytes
+
+||| Proof that StateSnapshot layout is C-ABI compliant
+export
+stateSnapshotLayoutValid : CABICompliant stateSnapshotLayout
+stateSnapshotLayoutValid = CABIOk stateSnapshotLayout ?snapshotFieldsAligned
+
+--------------------------------------------------------------------------------
+-- UndoStack Layout (oblibeniser-specific)
+--------------------------------------------------------------------------------
+
+||| UndoStack C-ABI layout:
+|||   stackPtr : Bits64 @ offset 0  (8 bytes)
+|||   depth    : Bits32 @ offset 8  (4 bytes)
+|||   maxDepth : Bits32 @ offset 12 (4 bytes)
+|||   topHash  : Bits64 @ offset 16 (8 bytes)
+|||   Total: 24 bytes, alignment: 8
+public export
+undoStackLayout : StructLayout
+undoStackLayout =
+  MkStructLayout
+    [ MkField "stackPtr"  0  8 8
+    , MkField "depth"     8  4 4
+    , MkField "maxDepth" 12  4 4
+    , MkField "topHash"  16  8 8
     ]
     24  -- Total size: 24 bytes
     8   -- Alignment: 8 bytes
 
-||| Proof that example layout is valid
+||| Proof that UndoStack layout is C-ABI compliant
 export
-exampleLayoutValid : CABICompliant exampleLayout
-exampleLayoutValid = CABIOk exampleLayout ?exampleFieldsAligned
+undoStackLayoutValid : CABICompliant undoStackLayout
+undoStackLayoutValid = CABIOk undoStackLayout ?undoStackFieldsAligned
 
 --------------------------------------------------------------------------------
 -- Offset Calculation

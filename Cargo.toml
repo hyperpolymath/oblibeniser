@@ -7,7 +7,7 @@ authors = ["Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>"]
 description = "Make operations reversible and auditable in hostile environments via Oblíbený"
 license = "PMPL-1.0-or-later"
 repository = "https://github.com/hyperpolymath/oblibeniser"
-keywords = ["obliben", "acceleration", "code-generation"]
+keywords = ["reversible-computing", "audit-trail", "undo", "oblibeny", "code-generation"]
 categories = ["command-line-utilities", "development-tools"]
 
 [dependencies]

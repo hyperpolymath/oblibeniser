@@ -1,19 +1,24 @@
-# ⚠️ STOP - CRITICAL READING REQUIRED
-
-**THIS FILE MUST BE READ FIRST BY ALL AI AGENTS**
+# SPDX-License-Identifier: PMPL-1.0-or-later
+# Copyright (c) 2026 Jonathan D.A. Jewell (hyperpolymath) <j.d.a.jewell@open.ac.uk>
+#
+# STOP - CRITICAL READING REQUIRED
+#
+# THIS FILE MUST BE READ FIRST BY ALL AI AGENTS
 
 ## WHAT IS THIS?
 
-This is the AI manifest for **[YOUR-REPO-NAME]**. It declares:
-- Canonical file locations (where things MUST be, and nowhere else)
-- Critical invariants (rules that must NEVER be violated)
-- Repository structure and organization
+This is the AI manifest for **oblibeniser** — a tool that makes operations
+reversible and auditable via Oblibeny (Czech: "favourite"), a nextgen language
+for reversible computing.
+
+Core concept: every forward operation has a provable inverse, enabling undo,
+audit trails, and time-travel debugging.
 
 ## CANONICAL LOCATIONS (UNIVERSAL RULE)
 
 ### Machine-Readable Metadata: `.machine_readable/` ONLY
 
-These 6 a2ml files MUST exist in `.machine_readable/` directory ONLY:
+These 6 a2ml files MUST exist in `.machine_readable/6a2/` directory ONLY:
 1. **STATE.a2ml** - Project state, progress, blockers
 2. **META.a2ml** - Architecture decisions, governance
 3. **ECOSYSTEM.a2ml** - Position in ecosystem, relationships
@@ -55,7 +60,7 @@ Policy enforcement contracts (k9, dust, lust, must, trust).
 ### AI Configuration & Guides: `.machine_readable/ai/` ONLY
 
 - `AI.a2ml` - Language-specific or LLM-specific patterns
-- `PLACEHOLDERS.md` - Bootstrap guide
+- `PLACEHOLDERS.adoc` - Bootstrap guide
 
 ### Community & Forge Metadata: `.github/` ONLY
 
@@ -80,41 +85,61 @@ Policy enforcement contracts (k9, dust, lust, must, trust).
 6. **Container images** - MUST use Chainguard base (`cgr.dev/chainguard/wolfi-base:latest` or `cgr.dev/chainguard/static:latest`)
 7. **Container runtime** - Podman, never Docker. Files are `Containerfile`, never `Dockerfile`
 8. **Container orchestration** - `selur-compose`, never `docker-compose`
+9. **Reversibility invariant** - Every ReversibleOperation MUST have a provable inverse
+10. **Audit chain integrity** - Audit entries MUST be hash-chained; breaks are critical errors
 
 ## REPOSITORY STRUCTURE
 
 This repo follows the **Dual-Track** architecture:
 
 ```
-[YOUR-REPO-NAME]/
+oblibeniser/
 ├── 0-AI-MANIFEST.a2ml         # THIS FILE (start here)
 ├── README.adoc                 # High-level orientation (Rich Human)
 ├── ROADMAP.adoc                # Future direction
 ├── CONTRIBUTING.adoc           # Human contribution guide
-├── GOVERNANCE.adoc             # Decision-making model
+├── Cargo.toml                  # Rust CLI project
 ├── Justfile                    # Task runner
 ├── Containerfile               # OCI build
-├── LICENSE                     # Primary license
+├── LICENSE                     # Primary license (PMPL-1.0-or-later)
 ├── src/                        # Source code
+│   ├── main.rs                 # CLI entrypoint
+│   ├── lib.rs                  # Library root
+│   ├── manifest/               # oblibeniser.toml parser
+│   ├── codegen/                # Oblibeny reversible wrapper codegen
 │   └── interface/              # Verified Interface Seams
-│       ├── abi/                # Idris2 ABI (The Spec)
+│       ├── abi/                # Idris2 ABI (Types, Layout, Foreign)
+│       │   ├── Types.idr       # ReversibleOperation, InverseProof, AuditEntry, etc.
+│       │   ├── Layout.idr      # C-ABI struct layouts with proofs
+│       │   └── Foreign.idr     # FFI declarations for all operations
 │       ├── ffi/                # Zig FFI (The Bridge)
+│       │   ├── build.zig
+│       │   ├── src/main.zig    # FFI implementation
+│       │   └── test/           # Integration tests
 │       └── generated/          # C Headers (The Result)
 ├── container/                  # Stapeln container ecosystem
 ├── docs/                       # Technical depths
-│   ├── attribution/            # Citations, owners, maintainers (adoc)
+│   ├── attribution/            # Citations, owners, maintainers
 │   ├── architecture/           # Topology, diagrams
-│   ├── theory/                 # Domain theory
+│   ├── theory/                 # Domain theory (reversible computing)
 │   └── practice/               # Manuals
-├── docs/legal/                  # Legal exhibits and full texts
 └── .machine_readable/          # ALL machine-readable metadata
+    └── 6a2/                    # STATE, META, ECOSYSTEM, etc.
 ```
+
+## DOMAIN CONCEPTS
+
+- **ReversibleOperation**: A forward operation paired with its inverse
+- **InverseProof**: Dependent-type proof that `inverse(forward(x)) = x`
+- **AuditEntry**: Hash-chained record of who did what, when
+- **StateSnapshot**: Serialised system state before/after an operation
+- **UndoStack**: Bounded LIFO stack of operations for time-travel
 
 ## SESSION STARTUP CHECKLIST
 
-✅ Read THIS file (0-AI-MANIFEST.a2ml) first
-✅ Understand canonical location: `.machine_readable/`
-✅ State understanding of canonical locations
+Read THIS file (0-AI-MANIFEST.a2ml) first
+Understand canonical location: `.machine_readable/`
+State understanding of canonical locations
 
 ## ATTESTATION PROOF
 

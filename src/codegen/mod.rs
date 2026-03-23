@@ -34,8 +34,7 @@ pub fn generate_all(manifest: &Manifest, output_dir: &str) -> Result<()> {
         .context("Failed to parse manifest into codegen structures")?;
 
     // Validate the parsed operations for logical consistency.
-    parser::validate_operations(&parsed)
-        .context("Operation validation failed")?;
+    parser::validate_operations(&parsed).context("Operation validation failed")?;
 
     // Generate inverse functions module.
     let inverse_module = inverse_gen::generate_inverse_module(&parsed)
@@ -110,10 +109,7 @@ pub fn run(manifest: &Manifest, _args: &[String]) -> Result<()> {
 }
 
 /// Generate a human-readable summary of what was generated.
-fn generate_summary(
-    parsed: &parser::ParsedManifest,
-    audit: &audit_gen::GeneratedAudit,
-) -> String {
+fn generate_summary(parsed: &parser::ParsedManifest, audit: &audit_gen::GeneratedAudit) -> String {
     let mut summary = String::new();
     summary.push_str(&format!(
         "oblibeniser generation summary\n\
@@ -131,7 +127,10 @@ fn generate_summary(
             op.name, op.forward_fn, op.inverse_strategy, op.inverse_fn_name
         ));
         for param in &op.params {
-            summary.push_str(&format!("    param: {}: {}\n", param.name, param.param_type));
+            summary.push_str(&format!(
+                "    param: {}: {}\n",
+                param.name, param.param_type
+            ));
         }
     }
 

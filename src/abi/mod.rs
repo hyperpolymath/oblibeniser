@@ -215,10 +215,9 @@ impl AuditTrail {
                 return Some(i);
             }
             // Verify chain linkage (skip the first entry or entries after eviction).
-            if i > 0 && self.hash_chain_enabled {
-                if entry.prev_hash != self.entries[i - 1].entry_hash {
-                    return Some(i);
-                }
+            if i > 0 && self.hash_chain_enabled && entry.prev_hash != self.entries[i - 1].entry_hash
+            {
+                return Some(i);
             }
         }
         None
@@ -543,7 +542,12 @@ mod tests {
 
     #[test]
     fn test_audit_entry_verify() {
-        let entry = AuditEntry::new(0, "test_op".to_string(), "abc123".to_string(), String::new());
+        let entry = AuditEntry::new(
+            0,
+            "test_op".to_string(),
+            "abc123".to_string(),
+            String::new(),
+        );
         assert!(entry.verify());
     }
 

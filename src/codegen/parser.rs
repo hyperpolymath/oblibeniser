@@ -57,11 +57,8 @@ fn parse_operation(op_def: &OperationDef) -> Result<ReversibleOperation> {
 /// This is the main entry point for the parser — it bridges between the
 /// TOML-level manifest types and the ABI-level code generation types.
 pub fn parse_manifest(manifest: &Manifest) -> Result<ParsedManifest> {
-    let operations: Result<Vec<ReversibleOperation>> = manifest
-        .operations
-        .iter()
-        .map(|op| parse_operation(op))
-        .collect();
+    let operations: Result<Vec<ReversibleOperation>> =
+        manifest.operations.iter().map(parse_operation).collect();
 
     Ok(ParsedManifest {
         project_name: manifest.project.name.clone(),

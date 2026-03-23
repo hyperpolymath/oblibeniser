@@ -364,7 +364,11 @@ max-depth = 20
         let audit = generate_audit_module(&parsed).unwrap();
         assert_eq!(audit.storage_backend, "file");
         assert!(audit.hash_chain_enabled);
-        assert!(audit.module_code.contains("SPDX-License-Identifier: PMPL-1.0-or-later"));
+        assert!(
+            audit
+                .module_code
+                .contains("SPDX-License-Identifier: PMPL-1.0-or-later")
+        );
         assert!(audit.module_code.contains("audit-test"));
         assert!(audit.module_code.contains("KNOWN_OPERATIONS"));
         assert!(audit.module_code.contains("\"create\""));

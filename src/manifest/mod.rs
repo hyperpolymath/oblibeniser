@@ -114,7 +114,7 @@ impl Default for AuditConfig {
 }
 
 /// `[undo]` section — configures the undo/redo stack and time-travel.
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct UndoConfig {
     /// Maximum depth of the undo stack (0 = unlimited).
     #[serde(rename = "max-depth", default)]
@@ -122,15 +122,6 @@ pub struct UndoConfig {
     /// Number of operations between automatic state checkpoints (0 = disabled).
     #[serde(rename = "auto-checkpoint-interval", default)]
     pub auto_checkpoint_interval: usize,
-}
-
-impl Default for UndoConfig {
-    fn default() -> Self {
-        Self {
-            max_depth: 0,
-            auto_checkpoint_interval: 0,
-        }
-    }
 }
 
 // -- Default value helpers for serde --
@@ -149,8 +140,8 @@ fn default_storage() -> String {
 
 /// Load and parse an oblibeniser.toml manifest from disk.
 pub fn load_manifest(path: &str) -> Result<Manifest> {
-    let content =
-        std::fs::read_to_string(path).with_context(|| format!("Failed to read manifest: {}", path))?;
+    let content = std::fs::read_to_string(path)
+        .with_context(|| format!("Failed to read manifest: {}", path))?;
     parse_manifest(&content).with_context(|| format!("Failed to parse manifest: {}", path))
 }
 
@@ -172,10 +163,7 @@ pub fn validate(manifest: &Manifest) -> Result<()> {
             anyhow::bail!("Each [[operations]] entry must have a non-empty 'name'");
         }
         if op.forward_fn.is_empty() {
-            anyhow::bail!(
-                "Operation '{}': forward-fn is required",
-                op.name
-            );
+            anyhow::bail!("Operation '{}': forward-fn is required", op.name);
         }
         // Validate the inverse strategy is a known value.
         op.parsed_strategy()?;

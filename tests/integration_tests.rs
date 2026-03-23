@@ -68,15 +68,25 @@ fn test_full_pipeline_manifest_to_codegen() {
     // Parse into codegen structures.
     let parsed = parser::parse_manifest(&manifest).expect("Codegen parse should succeed");
     assert_eq!(parsed.operations.len(), 3);
-    assert_eq!(parsed.operations[0].inverse_strategy, InverseStrategy::Mirror);
-    assert_eq!(parsed.operations[1].inverse_strategy, InverseStrategy::LogReplay);
-    assert_eq!(parsed.operations[2].inverse_strategy, InverseStrategy::Snapshot);
+    assert_eq!(
+        parsed.operations[0].inverse_strategy,
+        InverseStrategy::Mirror
+    );
+    assert_eq!(
+        parsed.operations[1].inverse_strategy,
+        InverseStrategy::LogReplay
+    );
+    assert_eq!(
+        parsed.operations[2].inverse_strategy,
+        InverseStrategy::Snapshot
+    );
 
     // Validate operations for logical consistency.
     parser::validate_operations(&parsed).expect("Operations should be valid");
 
     // Generate inverse functions.
-    let inverses = inverse_gen::generate_inverses(&parsed).expect("Inverse generation should succeed");
+    let inverses =
+        inverse_gen::generate_inverses(&parsed).expect("Inverse generation should succeed");
     assert_eq!(inverses.len(), 3);
 
     // Verify each inverse has the correct function name and strategy.
@@ -85,7 +95,8 @@ fn test_full_pipeline_manifest_to_codegen() {
     assert_eq!(inverses[2].function_name, "schema_migrate_inverse");
 
     // Generate the full inverse module.
-    let module = inverse_gen::generate_inverse_module(&parsed).expect("Module generation should succeed");
+    let module =
+        inverse_gen::generate_inverse_module(&parsed).expect("Module generation should succeed");
     assert!(module.contains("pub fn db_insert_inverse"));
     assert!(module.contains("pub fn db_update_inverse"));
     assert!(module.contains("pub fn schema_migrate_inverse"));
@@ -133,7 +144,11 @@ fn test_audit_trail_hash_chain_integrity() {
 
     // Verify individual entry self-consistency.
     for entry in &trail.entries {
-        assert!(entry.verify(), "Entry {} should be self-consistent", entry.sequence);
+        assert!(
+            entry.verify(),
+            "Entry {} should be self-consistent",
+            entry.sequence
+        );
     }
 
     // Tamper with an entry and verify the chain detects it.
@@ -191,7 +206,11 @@ fn test_undo_redo_stack_depth_and_ordering() {
         snapshot: None,
         audit_sequence: 7,
     });
-    assert_eq!(stack.redo_depth(), 0, "Redo should be cleared after new push");
+    assert_eq!(
+        stack.redo_depth(),
+        0,
+        "Redo should be cleared after new push"
+    );
 
     // Verify undo still works after the new push.
     let u3 = stack.undo().unwrap();
@@ -213,7 +232,11 @@ fn test_time_travel_navigation() {
             &format!("hash_{}", i),
             vec![i as u8],
             vec![255 - i as u8],
-            if i % 2 == 0 { Some(vec![i as u8; 10]) } else { None },
+            if i % 2 == 0 {
+                Some(vec![i as u8; 10])
+            } else {
+                None
+            },
         );
     }
 
@@ -222,7 +245,11 @@ fn test_time_travel_navigation() {
 
     // Travel backward to position 1.
     let backward_steps = tt.travel_to(1);
-    assert_eq!(backward_steps.len(), 3, "Should undo 3 operations (4→3→2→1)");
+    assert_eq!(
+        backward_steps.len(),
+        3,
+        "Should undo 3 operations (4→3→2→1)"
+    );
     assert_eq!(tt.current_position, 1);
     for step in &backward_steps {
         assert_eq!(step.direction, TimeTravelDirection::Backward);
@@ -238,7 +265,10 @@ fn test_time_travel_navigation() {
 
     // Travel to current position should be a no-op.
     let noop_steps = tt.travel_to(3);
-    assert!(noop_steps.is_empty(), "Travel to current position should be no-op");
+    assert!(
+        noop_steps.is_empty(),
+        "Travel to current position should be no-op"
+    );
 }
 
 // ============================================================================
@@ -318,10 +348,22 @@ fn test_end_to_end_file_generation() {
     .expect("Generation should succeed");
 
     // Verify all expected files were created.
-    assert!(output_dir.join("inverses.rs").exists(), "inverses.rs should exist");
-    assert!(output_dir.join("audit.rs").exists(), "audit.rs should exist");
-    assert!(output_dir.join("verify_audit.rs").exists(), "verify_audit.rs should exist");
-    assert!(output_dir.join("summary.txt").exists(), "summary.txt should exist");
+    assert!(
+        output_dir.join("inverses.rs").exists(),
+        "inverses.rs should exist"
+    );
+    assert!(
+        output_dir.join("audit.rs").exists(),
+        "audit.rs should exist"
+    );
+    assert!(
+        output_dir.join("verify_audit.rs").exists(),
+        "verify_audit.rs should exist"
+    );
+    assert!(
+        output_dir.join("summary.txt").exists(),
+        "summary.txt should exist"
+    );
 
     // Verify content of generated files.
     let inverses = std::fs::read_to_string(output_dir.join("inverses.rs")).unwrap();
@@ -349,7 +391,10 @@ fn test_manifest_validation_rejects_invalid() {
 name = ""
 "#;
     let m = manifest::parse_manifest(bad_name).unwrap();
-    assert!(manifest::validate(&m).is_err(), "Empty project name should fail");
+    assert!(
+        manifest::validate(&m).is_err(),
+        "Empty project name should fail"
+    );
 
     // Invalid inverse strategy.
     let bad_strategy = r#"
@@ -362,7 +407,10 @@ forward-fn = "fn"
 inverse-strategy = "quantum-undo"
 "#;
     let m = manifest::parse_manifest(bad_strategy).unwrap();
-    assert!(manifest::validate(&m).is_err(), "Invalid strategy should fail");
+    assert!(
+        manifest::validate(&m).is_err(),
+        "Invalid strategy should fail"
+    );
 
     // Invalid storage backend.
     let bad_storage = r#"
@@ -373,7 +421,10 @@ name = "test"
 storage = "blockchain"
 "#;
     let m = manifest::parse_manifest(bad_storage).unwrap();
-    assert!(manifest::validate(&m).is_err(), "Invalid storage should fail");
+    assert!(
+        manifest::validate(&m).is_err(),
+        "Invalid storage should fail"
+    );
 
     // Duplicate operation names (caught by parser validation).
     let dup_ops = r#"
@@ -429,12 +480,18 @@ fn test_time_travel_snapshots() {
 
     // Find nearest snapshot to sequence 7.
     let snap = tt.nearest_snapshot(7).expect("Should find a snapshot");
-    assert_eq!(snap.at_sequence, 6, "Nearest snapshot at or before 7 should be 6");
+    assert_eq!(
+        snap.at_sequence, 6,
+        "Nearest snapshot at or before 7 should be 6"
+    );
     assert_eq!(snap.data, b"state_at_6");
 
     // Find nearest snapshot to sequence 2.
     let snap = tt.nearest_snapshot(2).expect("Should find a snapshot");
-    assert_eq!(snap.at_sequence, 0, "Nearest snapshot at or before 2 should be 0");
+    assert_eq!(
+        snap.at_sequence, 0,
+        "Nearest snapshot at or before 2 should be 0"
+    );
 
     // No snapshot before sequence 0 should exist (but 0 itself has one).
     let snap = tt.nearest_snapshot(0).expect("Should find snapshot at 0");

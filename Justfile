@@ -2,6 +2,8 @@
 # oblibeniser — Make operations reversible and auditable via Oblíbený
 
 # Default: build and test
+import? "contractile.just"
+
 default: build test
 
 # Build release binary

@@ -130,8 +130,8 @@ name = "backup"
 forward-fn = "sys::backup"
 inverse-strategy = "snapshot"
 "#;
-        let m = manifest::parse_manifest(toml).unwrap();
-        let parsed = parse_manifest(&m).unwrap();
+        let m = manifest::parse_manifest(toml).expect("TODO: handle error");
+        let parsed = parse_manifest(&m).expect("TODO: handle error");
         assert_eq!(parsed.project_name, "test-project");
         assert_eq!(parsed.operations.len(), 2);
         assert_eq!(parsed.operations[0].params.len(), 2);
@@ -160,8 +160,8 @@ forward-fn = "c::d"
 params = ["y:i32"]
 inverse-strategy = "mirror"
 "#;
-        let m = manifest::parse_manifest(toml).unwrap();
-        let parsed = parse_manifest(&m).unwrap();
+        let m = manifest::parse_manifest(toml).expect("TODO: handle error");
+        let parsed = parse_manifest(&m).expect("TODO: handle error");
         assert!(validate_operations(&parsed).is_err());
     }
 
@@ -176,8 +176,8 @@ name = "empty_mirror"
 forward-fn = "a::b"
 inverse-strategy = "mirror"
 "#;
-        let m = manifest::parse_manifest(toml).unwrap();
-        let parsed = parse_manifest(&m).unwrap();
+        let m = manifest::parse_manifest(toml).expect("TODO: handle error");
+        let parsed = parse_manifest(&m).expect("TODO: handle error");
         assert!(validate_operations(&parsed).is_err());
     }
 }

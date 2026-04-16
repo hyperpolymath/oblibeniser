@@ -264,7 +264,7 @@ name = "do_thing"
 forward-fn = "mod::do_thing"
 inverse-strategy = "mirror"
 "#;
-        let m = parse_manifest(toml).unwrap();
+        let m = parse_manifest(toml).expect("TODO: handle error");
         assert_eq!(m.project.name, "test");
         assert_eq!(m.operations.len(), 1);
         assert_eq!(m.operations[0].name, "do_thing");
@@ -299,7 +299,7 @@ max-entries = 500
 max-depth = 50
 auto-checkpoint-interval = 5
 "#;
-        let m = parse_manifest(toml).unwrap();
+        let m = parse_manifest(toml).expect("TODO: handle error");
         assert_eq!(m.operations.len(), 2);
         assert_eq!(m.audit.storage, "memory");
         assert_eq!(m.audit.max_entries, 500);
@@ -318,7 +318,7 @@ name = "op"
 forward-fn = "fn"
 inverse-strategy = "mirror"
 "#;
-        let m = parse_manifest(toml).unwrap();
+        let m = parse_manifest(toml).expect("TODO: handle error");
         assert!(validate(&m).is_err());
     }
 
@@ -333,7 +333,7 @@ name = "op"
 forward-fn = "fn"
 inverse-strategy = "teleport"
 "#;
-        let m = parse_manifest(toml).unwrap();
+        let m = parse_manifest(toml).expect("TODO: handle error");
         assert!(validate(&m).is_err());
     }
 
@@ -346,7 +346,7 @@ name = "test"
 [audit]
 storage = "cloud"
 "#;
-        let m = parse_manifest(toml).unwrap();
+        let m = parse_manifest(toml).expect("TODO: handle error");
         assert!(validate(&m).is_err());
     }
 

@@ -145,7 +145,7 @@ impl AuditTrail {{
             self.entries.drain(0..excess);
         }}
 
-        self.entries.last().unwrap()
+        self.entries.last().expect("TODO: handle error")
     }}
 
     /// Verify the integrity of the entire hash chain.
@@ -354,14 +354,14 @@ max-entries = 500
 [undo]
 max-depth = 20
 "#;
-        let m = manifest::parse_manifest(toml).unwrap();
-        parser::parse_manifest(&m).unwrap()
+        let m = manifest::parse_manifest(toml).expect("TODO: handle error");
+        parser::parse_manifest(&m).expect("TODO: handle error")
     }
 
     #[test]
     fn test_generate_audit_module_file_storage() {
         let parsed = test_parsed();
-        let audit = generate_audit_module(&parsed).unwrap();
+        let audit = generate_audit_module(&parsed).expect("TODO: handle error");
         assert_eq!(audit.storage_backend, "file");
         assert!(audit.hash_chain_enabled);
         assert!(
@@ -386,9 +386,9 @@ name = "mem-test"
 [audit]
 storage = "memory"
 "#;
-        let m = manifest::parse_manifest(toml).unwrap();
-        let parsed = parser::parse_manifest(&m).unwrap();
-        let audit = generate_audit_module(&parsed).unwrap();
+        let m = manifest::parse_manifest(toml).expect("TODO: handle error");
+        let parsed = parser::parse_manifest(&m).expect("TODO: handle error");
+        let audit = generate_audit_module(&parsed).expect("TODO: handle error");
         assert_eq!(audit.storage_backend, "memory");
         assert!(audit.module_code.contains("No-op save"));
     }

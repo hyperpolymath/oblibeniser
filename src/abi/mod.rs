@@ -203,7 +203,7 @@ impl AuditTrail {
             self.entries.drain(0..excess);
         }
 
-        self.entries.last().unwrap()
+        self.entries.last().expect("TODO: handle error")
     }
 
     /// Verify the integrity of the entire hash chain. Returns the index of
@@ -590,12 +590,12 @@ mod tests {
         });
         assert_eq!(stack.undo_depth(), 2);
 
-        let undone = stack.undo().unwrap();
+        let undone = stack.undo().expect("TODO: handle error");
         assert_eq!(undone.operation_name, "op2");
         assert_eq!(stack.undo_depth(), 1);
         assert_eq!(stack.redo_depth(), 1);
 
-        let redone = stack.redo().unwrap();
+        let redone = stack.redo().expect("TODO: handle error");
         assert_eq!(redone.operation_name, "op2");
         assert_eq!(stack.undo_depth(), 2);
         assert_eq!(stack.redo_depth(), 0);
@@ -614,7 +614,7 @@ mod tests {
             });
         }
         assert_eq!(stack.undo_depth(), 2);
-        let entry = stack.undo().unwrap();
+        let entry = stack.undo().expect("TODO: handle error");
         assert_eq!(entry.operation_name, "op4");
     }
 

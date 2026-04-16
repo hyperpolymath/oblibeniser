@@ -79,7 +79,7 @@ pub fn {inverse_fn}({params}) -> Result<InverseResult, OblibeniserError> {{
     let result = {forward_fn}_mirror_undo({param_csv})?;
 
     // Log the inverse execution to the audit trail.
-    AUDIT_TRAIL.lock().unwrap().record(
+    AUDIT_TRAIL.lock().expect("TODO: handle error").record(
         "{inverse_fn}",
         &hash_params(&[{param_refs}]),
     );
@@ -135,7 +135,7 @@ pub fn {inverse_fn}({params}, mutation_log: &MutationLog) -> Result<InverseResul
     }}
 
     // Record the replay in the audit trail.
-    AUDIT_TRAIL.lock().unwrap().record(
+    AUDIT_TRAIL.lock().expect("TODO: handle error").record(
         "{inverse_fn}",
         &hash_params(&[{param_refs}]),
     );
@@ -160,10 +160,10 @@ pub fn {op_name}_logged({params}) -> Result<MutationLog, OblibeniserError> {{
     {forward_fn}_with_log({param_csv}, &mut log)?;
 
     // Store the log for potential future undo.
-    MUTATION_LOGS.lock().unwrap().insert(log.id(), log.clone());
+    MUTATION_LOGS.lock().expect("TODO: handle error").insert(log.id(), log.clone());
 
     // Record in audit trail.
-    AUDIT_TRAIL.lock().unwrap().record(
+    AUDIT_TRAIL.lock().expect("TODO: handle error").record(
         "{op_name}",
         &hash_params(&[{param_refs}]),
     );
@@ -203,7 +203,7 @@ pub fn {inverse_fn}(snapshot: &StateSnapshot) -> Result<InverseResult, Oblibenis
     restore_state(snapshot)?;
 
     // Record the restoration in the audit trail.
-    AUDIT_TRAIL.lock().unwrap().record(
+    AUDIT_TRAIL.lock().expect("TODO: handle error").record(
         "{inverse_fn}",
         &format!("snapshot_seq_{{}}", snapshot.at_sequence),
     );
@@ -229,18 +229,18 @@ pub fn {op_name}_with_snapshot({params}) -> Result<StateSnapshot, OblibeniserErr
     {forward_fn}({param_csv})?;
 
     // Record in audit trail.
-    AUDIT_TRAIL.lock().unwrap().record(
+    AUDIT_TRAIL.lock().expect("TODO: handle error").record(
         "{op_name}",
         &hash_params(&[{param_refs}]),
     );
 
     // Push onto the undo stack with the snapshot.
-    UNDO_STACK.lock().unwrap().push(UndoEntry {{
+    UNDO_STACK.lock().expect("TODO: handle error").push(UndoEntry {{
         operation_name: "{op_name}".to_string(),
         forward_params: serialize_params(&[{param_refs}]),
         inverse_params: vec![],
         snapshot: Some(snapshot.clone()),
-        audit_sequence: AUDIT_TRAIL.lock().unwrap().len() as u64 - 1,
+        audit_sequence: AUDIT_TRAIL.lock().expect("TODO: handle error").len() as u64 - 1,
     }});
 
     Ok(snapshot)
@@ -383,7 +383,7 @@ fn capture_params_state(params: &[&dyn std::fmt::Debug]) -> String {{
 /// Capture full application state (application-specific — implement per project).
 fn capture_state() -> Result<StateSnapshot, OblibeniserError> {{
     Ok(StateSnapshot {{
-        at_sequence: AUDIT_TRAIL.lock().unwrap().len() as u64,
+        at_sequence: AUDIT_TRAIL.lock().expect("TODO: handle error").len() as u64,
         data: vec![],
     }})
 }}
@@ -458,21 +458,21 @@ max-entries = 1000
 [undo]
 max-depth = 50
 "#;
-        let m = manifest::parse_manifest(toml).unwrap();
-        parser::parse_manifest(&m).unwrap()
+        let m = manifest::parse_manifest(toml).expect("TODO: handle error");
+        parser::parse_manifest(&m).expect("TODO: handle error")
     }
 
     #[test]
     fn test_generate_inverses_count() {
         let parsed = test_manifest();
-        let inverses = generate_inverses(&parsed).unwrap();
+        let inverses = generate_inverses(&parsed).expect("TODO: handle error");
         assert_eq!(inverses.len(), 3);
     }
 
     #[test]
     fn test_mirror_inverse_contains_function() {
         let parsed = test_manifest();
-        let inverses = generate_inverses(&parsed).unwrap();
+        let inverses = generate_inverses(&parsed).expect("TODO: handle error");
         let mirror = &inverses[0];
         assert_eq!(mirror.function_name, "insert_inverse");
         assert!(mirror.code.contains("pub fn insert_inverse"));
@@ -482,7 +482,7 @@ max-depth = 50
     #[test]
     fn test_log_replay_inverse_contains_log() {
         let parsed = test_manifest();
-        let inverses = generate_inverses(&parsed).unwrap();
+        let inverses = generate_inverses(&parsed).expect("TODO: handle error");
         let replay = &inverses[1];
         assert_eq!(replay.strategy, InverseStrategy::LogReplay);
         assert!(replay.code.contains("mutation_log"));
@@ -492,7 +492,7 @@ max-depth = 50
     #[test]
     fn test_snapshot_inverse_contains_restore() {
         let parsed = test_manifest();
-        let inverses = generate_inverses(&parsed).unwrap();
+        let inverses = generate_inverses(&parsed).expect("TODO: handle error");
         let snapshot = &inverses[2];
         assert_eq!(snapshot.strategy, InverseStrategy::Snapshot);
         assert!(snapshot.code.contains("restore_state"));
@@ -502,7 +502,7 @@ max-depth = 50
     #[test]
     fn test_generate_inverse_module_complete() {
         let parsed = test_manifest();
-        let module = generate_inverse_module(&parsed).unwrap();
+        let module = generate_inverse_module(&parsed).expect("TODO: handle error");
         assert!(module.contains("SPDX-License-Identifier: PMPL-1.0-or-later"));
         assert!(module.contains("Generated by oblibeniser"));
         assert!(module.contains("pub fn insert_inverse"));

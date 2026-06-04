@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MPL-2.0
-// Copyright (c) 2026 Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
+// Copyright (c) Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
 //
 // ABI module for oblibeniser — core types for reversible operations, audit trails,
 // undo stacks, and time-travel debugging. These types form the Oblíbený interface

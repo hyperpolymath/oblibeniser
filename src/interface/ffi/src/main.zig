@@ -1,11 +1,11 @@
+// SPDX-License-Identifier: MPL-2.0
+// Copyright (c) Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
 // Oblibeniser FFI Implementation
 //
 // This module implements the C-compatible FFI declared in src/interface/abi/Foreign.idr.
 // All types and layouts must match the Idris2 ABI definitions.
 // Provides: operation recording, inverse computation, audit trail, undo stack.
 //
-// SPDX-License-Identifier: MPL-2.0
-// Copyright (c) 2026 Jonathan D.A. Jewell (hyperpolymath) <j.d.a.jewell@open.ac.uk>
 
 const std = @import("std");
 

@@ -15,6 +15,7 @@ module Oblibeniser.ABI.Types
 import Data.Bits
 import Data.So
 import Data.Vect
+import Decidable.Equality
 
 %default total
 
@@ -26,14 +27,12 @@ import Data.Vect
 public export
 data Platform = Linux | Windows | MacOS | BSD | WASM
 
-||| Compile-time platform detection
-||| This will be set during compilation based on target
+||| The platform this build targets. Defaults to Linux; the Rust/Zig build
+||| layer overrides this via the codegen target selection. (Previously a
+||| `%runElab` stub that required ElabReflection and did not compile.)
 public export
 thisPlatform : Platform
-thisPlatform =
-  %runElab do
-    -- Platform detection logic
-    pure Linux  -- Default, override with compiler flags
+thisPlatform = Linux
 
 --------------------------------------------------------------------------------
 -- Core Result Codes
@@ -72,7 +71,9 @@ resultToInt NotReversible = 5
 resultToInt AuditViolation = 6
 resultToInt InverseProofFailed = 7
 
-||| Results are decidably equal
+||| Results are decidably equal. The off-diagonal cases discharge the
+||| disequality explicitly; the previous `decEq _ _ = No absurd` did not
+||| compile (no `Uninhabited (x = y)` instance exists for these).
 public export
 DecEq Result where
   decEq Ok Ok = Yes Refl
@@ -83,7 +84,62 @@ DecEq Result where
   decEq NotReversible NotReversible = Yes Refl
   decEq AuditViolation AuditViolation = Yes Refl
   decEq InverseProofFailed InverseProofFailed = Yes Refl
-  decEq _ _ = No absurd
+  decEq Ok Error = No (\case Refl impossible)
+  decEq Ok InvalidParam = No (\case Refl impossible)
+  decEq Ok OutOfMemory = No (\case Refl impossible)
+  decEq Ok NullPointer = No (\case Refl impossible)
+  decEq Ok NotReversible = No (\case Refl impossible)
+  decEq Ok AuditViolation = No (\case Refl impossible)
+  decEq Ok InverseProofFailed = No (\case Refl impossible)
+  decEq Error Ok = No (\case Refl impossible)
+  decEq Error InvalidParam = No (\case Refl impossible)
+  decEq Error OutOfMemory = No (\case Refl impossible)
+  decEq Error NullPointer = No (\case Refl impossible)
+  decEq Error NotReversible = No (\case Refl impossible)
+  decEq Error AuditViolation = No (\case Refl impossible)
+  decEq Error InverseProofFailed = No (\case Refl impossible)
+  decEq InvalidParam Ok = No (\case Refl impossible)
+  decEq InvalidParam Error = No (\case Refl impossible)
+  decEq InvalidParam OutOfMemory = No (\case Refl impossible)
+  decEq InvalidParam NullPointer = No (\case Refl impossible)
+  decEq InvalidParam NotReversible = No (\case Refl impossible)
+  decEq InvalidParam AuditViolation = No (\case Refl impossible)
+  decEq InvalidParam InverseProofFailed = No (\case Refl impossible)
+  decEq OutOfMemory Ok = No (\case Refl impossible)
+  decEq OutOfMemory Error = No (\case Refl impossible)
+  decEq OutOfMemory InvalidParam = No (\case Refl impossible)
+  decEq OutOfMemory NullPointer = No (\case Refl impossible)
+  decEq OutOfMemory NotReversible = No (\case Refl impossible)
+  decEq OutOfMemory AuditViolation = No (\case Refl impossible)
+  decEq OutOfMemory InverseProofFailed = No (\case Refl impossible)
+  decEq NullPointer Ok = No (\case Refl impossible)
+  decEq NullPointer Error = No (\case Refl impossible)
+  decEq NullPointer InvalidParam = No (\case Refl impossible)
+  decEq NullPointer OutOfMemory = No (\case Refl impossible)
+  decEq NullPointer NotReversible = No (\case Refl impossible)
+  decEq NullPointer AuditViolation = No (\case Refl impossible)
+  decEq NullPointer InverseProofFailed = No (\case Refl impossible)
+  decEq NotReversible Ok = No (\case Refl impossible)
+  decEq NotReversible Error = No (\case Refl impossible)
+  decEq NotReversible InvalidParam = No (\case Refl impossible)
+  decEq NotReversible OutOfMemory = No (\case Refl impossible)
+  decEq NotReversible NullPointer = No (\case Refl impossible)
+  decEq NotReversible AuditViolation = No (\case Refl impossible)
+  decEq NotReversible InverseProofFailed = No (\case Refl impossible)
+  decEq AuditViolation Ok = No (\case Refl impossible)
+  decEq AuditViolation Error = No (\case Refl impossible)
+  decEq AuditViolation InvalidParam = No (\case Refl impossible)
+  decEq AuditViolation OutOfMemory = No (\case Refl impossible)
+  decEq AuditViolation NullPointer = No (\case Refl impossible)
+  decEq AuditViolation NotReversible = No (\case Refl impossible)
+  decEq AuditViolation InverseProofFailed = No (\case Refl impossible)
+  decEq InverseProofFailed Ok = No (\case Refl impossible)
+  decEq InverseProofFailed Error = No (\case Refl impossible)
+  decEq InverseProofFailed InvalidParam = No (\case Refl impossible)
+  decEq InverseProofFailed OutOfMemory = No (\case Refl impossible)
+  decEq InverseProofFailed NullPointer = No (\case Refl impossible)
+  decEq InverseProofFailed NotReversible = No (\case Refl impossible)
+  decEq InverseProofFailed AuditViolation = No (\case Refl impossible)
 
 --------------------------------------------------------------------------------
 -- Opaque Handles
@@ -95,12 +151,15 @@ public export
 data Handle : Type where
   MkHandle : (ptr : Bits64) -> {auto 0 nonNull : So (ptr /= 0)} -> Handle
 
-||| Safely create a handle from a pointer value
-||| Returns Nothing if pointer is null
+||| Safely create a handle from a pointer value. Uses `choose` to obtain a
+||| real `So (ptr /= 0)` witness for the non-null branch. (Previously
+||| `Just (MkHandle ptr)` left the `auto` proof unsolved and did not compile.)
 public export
 createHandle : Bits64 -> Maybe Handle
-createHandle 0 = Nothing
-createHandle ptr = Just (MkHandle ptr)
+createHandle ptr =
+  case choose (ptr /= 0) of
+    Left ok => Just (MkHandle ptr {nonNull = ok})
+    Right _ => Nothing
 
 ||| Extract pointer value from handle
 public export
@@ -233,113 +292,20 @@ ptrSize MacOS = 64
 ptrSize BSD = 64
 ptrSize WASM = 32
 
-||| Pointer type for platform
-public export
-CPtr : Platform -> Type -> Type
-CPtr p _ = Bits (ptrSize p)
+||| Note: the precise C size/alignment guarantees for the reversible-computing
+||| structs (StateSnapshot, AuditEntry, UndoStack) are not asserted here via
+||| vacuous `HasSize`/`HasAlignment` witnesses (the original scaffold did so
+||| with constructors that proved nothing, and also pattern-matched on `Type`,
+||| which Idris2 cannot do). Instead they are captured *genuinely* in
+||| `Oblibeniser.ABI.Layout` as `StructLayout` values carrying real `Divides`
+||| alignment proofs, and discharged as machine-checked theorems in
+||| `Oblibeniser.ABI.Proofs` (`auditEntryCompliant`, `stateSnapshotCompliant`,
+||| `undoStackCompliant`).
 
---------------------------------------------------------------------------------
--- Memory Layout Proofs
---------------------------------------------------------------------------------
-
-||| Proof that a type has a specific size
-public export
-data HasSize : Type -> Nat -> Type where
-  SizeProof : {0 t : Type} -> {n : Nat} -> HasSize t n
-
-||| Proof that a type has a specific alignment
-public export
-data HasAlignment : Type -> Nat -> Type where
-  AlignProof : {0 t : Type} -> {n : Nat} -> HasAlignment t n
-
-||| Size of C types (platform-specific)
-public export
-cSizeOf : (p : Platform) -> (t : Type) -> Nat
-cSizeOf p (CInt _) = 4
-cSizeOf p (CSize _) = if ptrSize p == 64 then 8 else 4
-cSizeOf p Bits32 = 4
-cSizeOf p Bits64 = 8
-cSizeOf p Double = 8
-cSizeOf p _ = ptrSize p `div` 8
-
-||| Alignment of C types (platform-specific)
-public export
-cAlignOf : (p : Platform) -> (t : Type) -> Nat
-cAlignOf p (CInt _) = 4
-cAlignOf p (CSize _) = if ptrSize p == 64 then 8 else 4
-cAlignOf p Bits32 = 4
-cAlignOf p Bits64 = 8
-cAlignOf p Double = 8
-cAlignOf p _ = ptrSize p `div` 8
-
---------------------------------------------------------------------------------
--- Reversible Operation Struct Layout Proofs
---------------------------------------------------------------------------------
-
-||| StateSnapshot has 5 fields: snapshotId(8) + timestamp(8) + stateHash(8) +
-||| stateSize(4) + padding(4) + statePtr(8) = 40 bytes, aligned to 8
-public export
-stateSnapshotSize : (p : Platform) -> HasSize StateSnapshot 40
-stateSnapshotSize p = SizeProof
-
-public export
-stateSnapshotAlign : (p : Platform) -> HasAlignment StateSnapshot 8
-stateSnapshotAlign p = AlignProof
-
-||| AuditEntry has 8 fields laid out for C-ABI compatibility.
-||| 7x Bits64 (56 bytes) + 1x Bits32 (4 bytes) + 4 padding = 64 bytes
-public export
-auditEntrySize : (p : Platform) -> HasSize AuditEntry 64
-auditEntrySize p = SizeProof
-
-public export
-auditEntryAlign : (p : Platform) -> HasAlignment AuditEntry 8
-auditEntryAlign p = AlignProof
-
-||| UndoStack: stackPtr(8) + depth(4) + maxDepth(4) + topHash(8) = 24 bytes
-public export
-undoStackSize : (p : Platform) -> HasSize UndoStack 24
-undoStackSize p = SizeProof
-
-public export
-undoStackAlign : (p : Platform) -> HasAlignment UndoStack 8
-undoStackAlign p = AlignProof
-
---------------------------------------------------------------------------------
--- FFI Declarations
---------------------------------------------------------------------------------
-
-||| Declare external C functions
-||| These will be implemented in Zig FFI
-namespace Foreign
-
-  ||| Record a forward operation, returning its operation ID
-  export
-  %foreign "C:oblibeniser_record_operation, liboblibeniser"
-  prim__recordOperation : Bits64 -> Bits64 -> PrimIO Bits64
-
-  ||| Compute and apply the inverse of an operation
-  export
-  %foreign "C:oblibeniser_apply_inverse, liboblibeniser"
-  prim__applyInverse : Bits64 -> Bits64 -> PrimIO Bits32
-
-  ||| Safe wrapper around record operation
-  export
-  recordOperation : Handle -> Bits64 -> IO (Either Result Bits64)
-  recordOperation h namePtr = do
-    result <- primIO (prim__recordOperation (handlePtr h) namePtr)
-    if result == 0
-      then pure (Left Error)
-      else pure (Right result)
-
-  ||| Safe wrapper around apply inverse
-  export
-  applyInverse : Handle -> Bits64 -> IO (Either Result ())
-  applyInverse h opId = do
-    result <- primIO (prim__applyInverse (handlePtr h) opId)
-    pure $ case result of
-      0 => Right ()
-      _ => Left Error
+-- The FFI primitive and safe-wrapper declarations live exclusively in
+-- `Oblibeniser.ABI.Foreign`. A duplicate `namespace Foreign` here previously
+-- redeclared `prim__applyInverse`/`recordOperation`, which collided with the
+-- real declarations once `Foreign` imported `Types` (ambiguous elaboration).
 
 --------------------------------------------------------------------------------
 -- Verification

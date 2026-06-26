@@ -444,7 +444,7 @@ export fn oblibeniser_undo_pop(handle: ?*Handle) u64 {
         return 0;
     };
 
-    const op_id = h.undo_stack.popOrNull() orelse {
+    const op_id = h.undo_stack.pop() orelse {
         setError("Undo stack empty");
         return 0;
     };
@@ -601,10 +601,24 @@ test "compute and verify inverse" {
     const handle = oblibeniser_init() orelse return error.InitFailed;
     defer oblibeniser_free(handle);
 
-    const op_id = oblibeniser_record_forward(handle, 0, 0);
-    _ = oblibeniser_finalise_forward(handle, op_id, 0);
+    // Record with a real pre-state snapshot, then finalise with a real
+    // post-state snapshot: compute_inverse requires both to be present.
+    var pre = std.mem.zeroes(StateSnapshot);
+    pre.state_hash = 0x1111;
+    var post = std.mem.zeroes(StateSnapshot);
+    post.state_hash = 0x2222;
+
+    const op_id = oblibeniser_record_forward(handle, 0, @intFromPtr(&pre));
+    try std.testing.expect(op_id != 0);
+
+    const finalise = oblibeniser_finalise_forward(handle, op_id, @intFromPtr(&post));
+    try std.testing.expectEqual(Result.ok, finalise);
+
     const compute = oblibeniser_compute_inverse(handle, op_id);
     try std.testing.expectEqual(Result.ok, compute);
+
+    const verify = oblibeniser_verify_inverse(handle, op_id);
+    try std.testing.expectEqual(Result.ok, verify);
 }
 
 test "undo stack push and pop" {

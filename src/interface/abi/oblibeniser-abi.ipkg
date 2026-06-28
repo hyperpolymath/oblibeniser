@@ -11,3 +11,4 @@ modules = Oblibeniser.ABI.Types
         , Oblibeniser.ABI.Proofs
         , Oblibeniser.ABI.Semantics
         , Oblibeniser.ABI.Invariants
+        , Oblibeniser.ABI.FfiSeam

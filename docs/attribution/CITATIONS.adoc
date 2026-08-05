@@ -1,34 +1,34 @@
-= {{PROJECT_NAME}} - Citation Guide
+= Oblibeniser - Citation Guide
 :toc:
 
 == BibTeX
 
 [source,bibtex]
 ----
-@software{{{PROJECT_NAME}}_2026,
-  author = {{{AUTHOR_LAST}}, {{AUTHOR_FIRST}}},
-  title = {{{PROJECT_NAME}}},
+@software{Oblibeniser_2026,
+  author = {Jewell, Jonathan},
+  title = {Oblibeniser},
   year = {2026},
-  url = {https://github.com/hyperpolymath/{{PROJECT_NAME}}},
+  url = {https://github.com/hyperpolymath/Oblibeniser},
   license = {MPL-2.0}
 }
 ----
 
 == Harvard Style
 
-{{AUTHOR_LAST}}, {{AUTHOR_INITIALS}} (2026) _{{PROJECT_NAME}}_ [Computer software]. Available at: https://github.com/hyperpolymath/{{PROJECT_NAME}}
+Jewell, JDJ (2026) _Oblibeniser_ [Computer software]. Available at: https://github.com/hyperpolymath/Oblibeniser
 
 == OSCOLA
 
-Jonathan D.A. Jewell, '{{PROJECT_NAME}}' (2026) <https://github.com/hyperpolymath/{{PROJECT_NAME}}>
+Jonathan D.A. Jewell, 'Oblibeniser' (2026) <https://github.com/hyperpolymath/Oblibeniser>
 
 == MLA
 
-{{AUTHOR_LAST}}, {{AUTHOR_FIRST}} "{{PROJECT_NAME}}." 2026, github.com/hyperpolymath/{{PROJECT_NAME}}.
+Jewell, Jonathan "Oblibeniser." 2026, github.com/hyperpolymath/Oblibeniser.
 
 == APA 7
 
-{{AUTHOR_LAST}}, {{AUTHOR_INITIALS}} (2026). _{{PROJECT_NAME}}_ [Computer software]. GitHub. https://github.com/hyperpolymath/{{PROJECT_NAME}}
+Jewell, JDJ (2026). _Oblibeniser_ [Computer software]. GitHub. https://github.com/hyperpolymath/Oblibeniser
 
 == See Also
 
